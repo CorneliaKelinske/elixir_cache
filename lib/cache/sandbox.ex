@@ -72,7 +72,7 @@ defmodule Cache.Sandbox do
         Enum.reduce(keys_fields, [], fn {key, fields}, acc ->
           values = Enum.map(fields, &state[key][&1])
           acc ++ [values]
-        end)
+        end) |> IO.inspect(label: "75", limit: :infinity, charlists: false)
 
       {:ok, values}
     end)

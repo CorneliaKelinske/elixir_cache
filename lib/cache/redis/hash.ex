@@ -48,7 +48,7 @@ defmodule Cache.Redis.Hash do
       end)
 
     with {:ok, data} <- Redis.Global.pipeline(pool_name, commands, opts) do
-      values = Enum.map(data, fn values -> Enum.map(values, &TermEncoder.decode/1) end)
+      values = Enum.map(data, fn values -> Enum.map(values, &TermEncoder.decode/1) end) |> IO.inspect(label: "51", limit: :infinity, charlists: false)
 
       {:ok, values}
     end
