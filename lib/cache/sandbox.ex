@@ -124,6 +124,10 @@ defmodule Cache.Sandbox do
     get(cache_name, key)
   end
 
+  def json_get(cache_name, key, opts) do
+    get(cache_name, key, opts)
+  end
+
   def json_get(cache_name, key, path, _opts) do
     if contains_index?(path) do
       [index | path ] = Enum.reverse(path)
@@ -162,12 +166,17 @@ defmodule Cache.Sandbox do
 
   def json_clear(cache_name, key, path, _opts) do
     Agent.update(cache_name, fn state ->
-      Map.update(state, key, nil, &update_in(&1, String.split(path, "."), fn
-        integer when is_integer(integer) -> 0
-        list when is_list(list) -> []
-        map when is_map(map) -> %{}
-        _ -> nil
-      end))
+      Map.update(
+        state,
+        key,
+        nil,
+        &update_in(&1, String.split(path, "."), fn
+          integer when is_integer(integer) -> 0
+          list when is_list(list) -> []
+          map when is_map(map) -> %{}
+          _ -> nil
+        end)
+      )
     end)
   end
 
@@ -195,6 +204,27 @@ defmodule Cache.Sandbox do
 
   def pipeline!(_cache_name, _commands, _opts) do
     raise "Not Implemented"
+  end
+
+  def command(_cache_name, _command, opts \\ [])
+
+  def command(cache_name, ["GET", key], opts) do
+    get(cache_name, key, opts)
+  end
+
+  def command(cache_name, ["SET", key, value], opts) do
+    put(cache_name, key,  nil, value, opts)
+  end
+
+  def command(cache_name, ["JSON.SET", key, path, value], opts) do
+    json_set(cache_name, key, path, value, opts)
+  end
+
+  def command(cache_name, ["JSON.GET", key], opts) do
+    json_get(cache_name, key, opts)
+  end
+  def command(cache_name, ["JSON.GET", key, path], opts) do
+    json_get(cache_name, key, path, opts)
   end
 
   def command(_cache_name, _command, _opts) do
